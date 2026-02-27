@@ -8,6 +8,7 @@
     <meta name="theme-color" content="#4a90e2">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
+        /* (Stil kodu aynen önceki gibi – buraya tekrar yazmıyorum ama kopyalarken mevcut stili koru) */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Poppins', sans-serif;
@@ -155,11 +156,35 @@
             text-shadow: 0 0 30px rgba(255,255,255,0.7);
             margin: 30px 0;
             animation: float 3s infinite ease-in-out;
+            display: inline-block;
         }
         @keyframes float {
             0% { transform: translateY(0); }
             50% { transform: translateY(-10px); }
             100% { transform: translateY(0); }
+        }
+        .speaker-btn {
+            background: rgba(255,255,255,0.3);
+            border: 2px solid white;
+            color: white;
+            font-size: 2rem;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-left: 15px;
+            vertical-align: middle;
+        }
+        .speaker-btn:hover {
+            transform: scale(1.1);
+            background: rgba(255,255,255,0.5);
+        }
+        .word-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
         }
         .message-box {
             font-size: 1.8rem;
@@ -347,6 +372,7 @@
             .word-display { font-size: 3.5rem; }
             .article-btn { padding: 12px 20px; font-size: 1.2rem; }
             .timer { font-size: 3rem; }
+            .speaker-btn { width: 50px; height: 50px; font-size: 1.5rem; }
         }
     </style>
 </head>
@@ -386,6 +412,7 @@
             {% endif %}
         {% endwith %}
 
+        <!-- ANA SAYFA -->
         {% if page == 'index' %}
             <div class="glass-card">
                 <h1>{{ get_text('welcome', lang) }}</h1>
@@ -398,6 +425,7 @@
                 {% endif %}
             </div>
 
+        <!-- KAYIT -->
         {% elif page == 'register' %}
             <h2>{{ get_text('register', lang) }}</h2>
             <form method="POST">
@@ -428,6 +456,7 @@
                 {{ get_text('have_account', lang) }} <a href="/login" style="color:white;">{{ get_text('login', lang) }}</a>
             </p>
 
+        <!-- GİRİŞ -->
         {% elif page == 'login' %}
             <h2>{{ get_text('login', lang) }}</h2>
             <form method="POST">
@@ -448,6 +477,7 @@
                 {{ get_text('no_account', lang) }} <a href="/register" style="color:white;">{{ get_text('register', lang) }}</a>
             </p>
 
+        <!-- PANEL -->
         {% elif page == 'dashboard' %}
             <div class="glass-card">
                 <h1>{{ get_text('welcome_user', lang) }}, {{ name }}!</h1>
@@ -455,6 +485,7 @@
                 <a href="/game"><button class="article-btn der">{{ get_text('game', lang) }}</button></a>
             </div>
 
+        <!-- OYUN (Text-to-Speech entegre) -->
         {% elif page == 'game' %}
             <div class="game-container">
                 <div id="durationSelection">
@@ -469,7 +500,10 @@
                 <div id="gameArea" style="display: none;">
                     <div class="timer" id="timer">60</div>
                     <div class="progress-bar"><div class="progress-fill" id="progress" style="width:100%"></div></div>
-                    <div class="word-display" id="word">Yükleniyor...</div>
+                    <div class="word-container">
+                        <span class="word-display" id="word">Yükleniyor...</span>
+                        <button class="speaker-btn" id="speakBtn" onclick="speakWord()" title="Kelimeyi dinle">🔊</button>
+                    </div>
                     <div class="article-buttons" id="articleButtons">
                         <button class="article-btn der" onclick="checkArticle('der')">der</button>
                         <button class="article-btn die" onclick="checkArticle('die')">die</button>
@@ -483,6 +517,7 @@
                 </div>
             </div>
 
+        <!-- PROFİL -->
         {% elif page == 'profile' %}
             <div class="glass-card">
                 <h1>{{ user.username }} - {{ get_text('profile', lang) }}</h1>
@@ -536,6 +571,7 @@
                 <button class="article-btn der" onclick="shareProfile()">{{ get_text('share', lang) }}</button>
             </div>
 
+        <!-- LİDER TABLOSU -->
         {% elif page == 'leaderboard' %}
             <div class="glass-card">
                 <h1>🏆 {{ get_text('leaderboard_title', lang) }}</h1>
@@ -567,8 +603,10 @@
 
     <button class="sound-toggle" id="soundToggle" onclick="toggleSound()">🔊</button>
 
+    <!-- OYUN JAVASCRIPT (Text-to-Speech eklendi) -->
     {% if page == 'game' %}
     <script>
+        // Ses sistemi (doğru/yanlış efektleri)
         let soundEnabled = localStorage.getItem('soundEnabled') !== 'false';
         const correctSound = new Audio('/static/sounds/correct.mp3');
         const wrongSound = new Audio('/static/sounds/wrong.mp3');
@@ -578,6 +616,20 @@
             else if (type === 'wrong') wrongSound.play().catch(e => {});
         }
 
+        // Text-to-Speech fonksiyonu
+        function speakWord() {
+            let word = document.getElementById('word').textContent;
+            if (word && word !== 'Yükleniyor...' && word !== 'Hata!' && word !== 'Bağlantı hatası') {
+                let utterance = new SpeechSynthesisUtterance(word);
+                utterance.lang = 'de-DE'; // Almanca telaffuz
+                utterance.rate = 0.9;      // Biraz yavaş
+                utterance.pitch = 1;
+                window.speechSynthesis.cancel(); // önceki konuşmayı durdur
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // Oyun değişkenleri
         let timeLeft = 60, totalTime = 60, score = 0, correctCount = 0, wrongCount = 0;
         let currentWordId = null, correctArticle = '', currentMeaning = '', currentPlural = '';
         let timerInterval, gameActive = false, paused = false, category = '1dk';
@@ -709,6 +761,7 @@
     </script>
     {% endif %}
 
+    <!-- PROFİL SAYFASI PAYLAŞIM -->
     {% if page == 'profile' %}
     <script>
         function shareProfile() {
@@ -722,6 +775,7 @@
     </script>
     {% endif %}
 
+    <!-- LİDER TABLOSU PAYLAŞIM -->
     {% if page == 'leaderboard' %}
     <script>
         function shareLeaderboard() {
@@ -735,6 +789,7 @@
     </script>
     {% endif %}
 
+    <!-- GENEL JAVASCRIPT (ses ve service worker) -->
     <script>
         let soundEnabled = localStorage.getItem('soundEnabled') !== 'false';
         const soundBtn = document.getElementById('soundToggle');
