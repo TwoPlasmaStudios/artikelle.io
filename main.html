@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Artikelle.io</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#4a90e2">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px 0;
+        }
+        nav {
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.3);
+            padding: 10px 0;
+        }
+        nav .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        nav ul li a, .lang-btn {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 30px;
+            transition: background 0.3s, transform 0.2s;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(5px);
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        nav ul li a:hover, .lang-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+        .lang-btn { font-size: 1rem; padding: 8px 12px; }
+        .alert {
+            padding: 12px 20px;
+            margin: 15px 0;
+            border-radius: 12px;
+            font-weight: 500;
+            animation: slideDown 0.4s ease;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .alert-success { background: #d4edda; color: #155724; border-left: 5px solid #28a745; }
+        .alert-danger { background: #f8d7da; color: #721c24; border-left: 5px solid #dc3545; }
+        .alert-info { background: #d1ecf1; color: #0c5460; border-left: 5px solid #17a2b8; }
+        .error { color: #dc3545; font-size: 0.9rem; margin-top: 5px; }
+
+        .glass-card {
+            background: rgba(255,255,255,0.25);
+            backdrop-filter: blur(12px);
+            border-radius: 40px;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 40px 30px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            max-width: 700px;
+            margin: 40px auto;
+            text-align: center;
+        }
+        h1, h2 { color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); margin-bottom: 20px; }
+        p { color: white; font-size: 1.2rem; margin-bottom: 30px; }
+
+        .article-btn {
+            padding: 15px 30px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 60px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid rgba(255,255,255,0.3);
+            margin: 5px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .article-btn.der { background: #2196F3; }
+        .article-btn.die { background: #F44336; }
+        .article-btn.das { background: #FFC107; color: #333; }
+        .article-btn:hover {
+            transform: scale(1.05) translateY(-3px);
+            filter: brightness(1.2);
+            box-shadow: 0 15px 25px rgba(0,0,0,0.3);
+        }
+
+        .game-container {
+            background: rgba(255,255,255,0.25);
+            backdrop-filter: blur(12px);
+            border-radius: 40px;
+            padding: 40px 30px;
+            max-width: 700px;
+            margin: 40px auto;
+            text-align: center;
+        }
+        .timer {
+            font-size: 4rem;
+            font-weight: 700;
+            color: white;
+            text-shadow: 0 0 20px rgba(255,255,255,0.8);
+            margin-bottom: 10px;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 30px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f6d365, #fda085);
+            border-radius: 30px;
+            transition: width 0.2s linear;
+        }
+        .word-display {
+            font-size: 5rem;
+            font-weight: 700;
+            color: white;
+            text-shadow: 0 0 30px rgba(255,255,255,0.7);
+            margin: 30px 0;
+            animation: float 3s infinite ease-in-out;
+        }
+        @keyframes float {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0); }
+        }
+        .message-box {
+            font-size: 1.8rem;
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 30px;
+            background: rgba(0,0,0,0.2);
+            color: white;
+        }
+        .continue-btn {
+            background: #28a745;
+            color: white;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 20px;
+        }
+        .continue-btn:hover {
+            transform: scale(1.05);
+            background: #218838;
+        }
+
+        .duration-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        .duration-btn {
+            padding: 12px 24px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 40px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            cursor: pointer;
+            transition: 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .duration-btn.selected {
+            background: #4a90e2;
+            transform: scale(1.05);
+            box-shadow: 0 0 15px #4a90e2;
+        }
+        .duration-btn:hover {
+            background: rgba(255,255,255,0.4);
+        }
+
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+            color: white;
+        }
+        .leaderboard-table th {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        .leaderboard-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        .leaderboard-table tr:last-child td { border-bottom: none; }
+        .leaderboard-table tr:hover { background: rgba(255,255,255,0.1); }
+
+        .sound-toggle {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: rgba(255,255,255,0.3);
+            backdrop-filter: blur(10px);
+            border: none;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            font-size: 2rem;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            transition: 0.3s;
+            color: white;
+        }
+        .sound-toggle:hover {
+            transform: scale(1.1);
+            background: rgba(255,255,255,0.5);
+        }
+
+        form {
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 30px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        form div { margin-bottom: 20px; }
+        form label {
+            color: white;
+            font-weight: 500;
+            display: block;
+            margin-bottom: 8px;
+        }
+        form input {
+            width: 100%;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 50px;
+            background: rgba(255,255,255,0.9);
+            font-size: 1rem;
+        }
+        form input:focus { outline: 3px solid #f6d365; }
+        form .submit {
+            background: linear-gradient(45deg, #f6d365, #fda085);
+            color: white;
+            font-weight: 600;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: 0.3s;
+            border: none;
+        }
+        form .submit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 25px rgba(0,0,0,0.2);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.2);
+            border-radius: 30px;
+            padding: 20px;
+            color: white;
+        }
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        .achievement-badge {
+            display: inline-block;
+            background: gold;
+            color: #333;
+            padding: 5px 15px;
+            border-radius: 30px;
+            margin: 5px;
+            font-weight: 500;
+        }
+        .daily-task {
+            background: rgba(255,255,255,0.15);
+            border-radius: 20px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .progress-bar-small {
+            height: 10px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 10px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        .progress-fill-small {
+            height: 100%;
+            background: #4caf50;
+            border-radius: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .logo { font-size: 1.4rem; }
+            nav ul { gap: 8px; }
+            nav ul li a, .lang-btn { padding: 6px 10px; font-size: 0.9rem; }
+            h1 { font-size: 1.8rem; }
+            .word-display { font-size: 3.5rem; }
+            .article-btn { padding: 12px 20px; font-size: 1.2rem; }
+            .timer { font-size: 3rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <a href="/" class="logo">Artikelle.io</a>
+            <ul>
+                {% if current_user.is_authenticated %}
+                    <li><a href="/dashboard">{{ get_text('dashboard', lang) }}</a></li>
+                    <li><a href="/game">{{ get_text('game', lang) }}</a></li>
+                    <li><a href="/leaderboard">{{ get_text('leaderboard', lang) }}</a></li>
+                    <li><a href="/profile">{{ get_text('profile', lang) }}</a></li>
+                    {% if current_user.is_admin %}
+                        <li><a href="/admin">{{ get_text('admin', lang) }}</a></li>
+                    {% endif %}
+                    <li><a href="/logout">{{ get_text('logout', lang) }}</a></li>
+                {% else %}
+                    <li><a href="/login">{{ get_text('login', lang) }}</a></li>
+                    <li><a href="/register">{{ get_text('register', lang) }}</a></li>
+                    <li><a href="/leaderboard">{{ get_text('leaderboard', lang) }}</a></li>
+                {% endif %}
+                <li>
+                    <a href="/set_language/tr" class="lang-btn">TR</a>
+                    <a href="/set_language/en" class="lang-btn">EN</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% if page == 'index' %}
+            <div class="glass-card">
+                <h1>{{ get_text('welcome', lang) }}</h1>
+                <p>{{ get_text('description', lang) }}</p>
+                {% if not current_user.is_authenticated %}
+                    <a href="/register"><button class="article-btn der">{{ get_text('signup', lang) }}</button></a>
+                    <a href="/login"><button class="article-btn die">{{ get_text('signin', lang) }}</button></a>
+                {% else %}
+                    <a href="/game"><button class="article-btn der">{{ get_text('game', lang) }}</button></a>
+                {% endif %}
+            </div>
+
+        {% elif page == 'register' %}
+            <h2>{{ get_text('register', lang) }}</h2>
+            <form method="POST">
+                {{ form.hidden_tag() }}
+                <div>
+                    <label>{{ get_text('username', lang) }}</label><br>
+                    {{ form.username(size=32) }}<br>
+                    {% for error in form.username.errors %}<span class="error">{{ error }}</span>{% endfor %}
+                </div>
+                <div>
+                    <label>{{ get_text('email', lang) }}</label><br>
+                    {{ form.email(size=32) }}<br>
+                    {% for error in form.email.errors %}<span class="error">{{ error }}</span>{% endfor %}
+                </div>
+                <div>
+                    <label>{{ get_text('password', lang) }}</label><br>
+                    {{ form.password(size=32) }}<br>
+                    {% for error in form.password.errors %}<span class="error">{{ error }}</span>{% endfor %}
+                </div>
+                <div>
+                    <label>{{ get_text('confirm_password', lang) }}</label><br>
+                    {{ form.confirm_password(size=32) }}<br>
+                    {% for error in form.confirm_password.errors %}<span class="error">{{ error }}</span>{% endfor %}
+                </div>
+                <div>{{ form.submit(class="submit") }}</div>
+            </form>
+            <p style="text-align:center; margin-top:20px;">
+                {{ get_text('have_account', lang) }} <a href="/login" style="color:white;">{{ get_text('login', lang) }}</a>
+            </p>
+
+        {% elif page == 'login' %}
+            <h2>{{ get_text('login', lang) }}</h2>
+            <form method="POST">
+                {{ form.hidden_tag() }}
+                <div>
+                    <label>{{ get_text('email', lang) }}</label><br>
+                    {{ form.email(size=32) }}<br>
+                    {% for error in form.email.errors %}<span class="error">{{ error }}</span>{% endfor %}
+                </div>
+                <div>
+                    <label>{{ get_text('password', lang) }}</label><br>
+                    {{ form.password(size=32) }}<br>
+                    {% for error in form.password.errors %}<span class="error">{{ error }}</span>{% endfor %}
+                </div>
+                <div>{{ form.submit(class="submit") }}</div>
+            </form>
+            <p style="text-align:center; margin-top:20px;">
+                {{ get_text('no_account', lang) }} <a href="/register" style="color:white;">{{ get_text('register', lang) }}</a>
+            </p>
+
+        {% elif page == 'dashboard' %}
+            <div class="glass-card">
+                <h1>{{ get_text('welcome_user', lang) }}, {{ name }}!</h1>
+                <p>{{ get_text('dashboard_desc', lang) }}</p>
+                <a href="/game"><button class="article-btn der">{{ get_text('game', lang) }}</button></a>
+            </div>
+
+        {% elif page == 'game' %}
+            <div class="game-container">
+                <div id="durationSelection">
+                    <h1>⏳ {{ get_text('choose_duration', lang) }}</h1>
+                    <div class="duration-buttons">
+                        <button class="duration-btn" data-duration="30">30 {{ get_text('seconds', lang) }}</button>
+                        <button class="duration-btn selected" data-duration="60">1 {{ get_text('minute', lang) }}</button>
+                        <button class="duration-btn" data-duration="180">3 {{ get_text('minutes', lang) }}</button>
+                        <button class="duration-btn" data-duration="300">5 {{ get_text('minutes', lang) }}</button>
+                    </div>
+                </div>
+                <div id="gameArea" style="display: none;">
+                    <div class="timer" id="timer">60</div>
+                    <div class="progress-bar"><div class="progress-fill" id="progress" style="width:100%"></div></div>
+                    <div class="word-display" id="word">Yükleniyor...</div>
+                    <div class="article-buttons" id="articleButtons">
+                        <button class="article-btn der" onclick="checkArticle('der')">der</button>
+                        <button class="article-btn die" onclick="checkArticle('die')">die</button>
+                        <button class="article-btn das" onclick="checkArticle('das')">das</button>
+                    </div>
+                    <div id="messageArea" style="display: none;">
+                        <div class="message-box" id="messageText"></div>
+                        <button class="continue-btn" id="continueBtn">{{ get_text('continue_btn', lang) }}</button>
+                    </div>
+                    <div class="score" id="score">{{ get_text('score', lang) }}: 0</div>
+                </div>
+            </div>
+
+        {% elif page == 'profile' %}
+            <div class="glass-card">
+                <h1>{{ user.username }} - {{ get_text('profile', lang) }}</h1>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">{{ stats.total_games }}</div>
+                        <div>{{ get_text('total_games', lang) }}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">{{ stats.total_correct }}</div>
+                        <div>{{ get_text('total_correct', lang) }}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">{{ stats.total_wrong }}</div>
+                        <div>{{ get_text('total_wrong', lang) }}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">{{ '%0.1f'|format(stats.accuracy) }}%</div>
+                        <div>{{ get_text('accuracy', lang) }}</div>
+                    </div>
+                </div>
+                <h2>{{ get_text('best_scores', lang) }}</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">30sn: {{ stats.best_scores['30sn'] }}</div>
+                    <div class="stat-card">1dk: {{ stats.best_scores['1dk'] }}</div>
+                    <div class="stat-card">3dk: {{ stats.best_scores['3dk'] }}</div>
+                    <div class="stat-card">5dk: {{ stats.best_scores['5dk'] }}</div>
+                </div>
+                <h2>{{ get_text('achievements', lang) }}</h2>
+                <div>
+                    {% for ua in achievements %}
+                        <span class="achievement-badge">{{ ua.achievement.name }}</span>
+                    {% else %}
+                        <p>Henüz başarım yok.</p>
+                    {% endfor %}
+                </div>
+                <h2>{{ get_text('daily_challenges', lang) }}</h2>
+                <div>
+                    {% for prog in daily_progress %}
+                        <div class="daily-task">
+                            <strong>{{ prog.challenge.name }}</strong><br>
+                            {{ prog.challenge.description }}<br>
+                            İlerleme: {{ prog.progress }} / {{ prog.challenge.goal_value }}
+                            <div class="progress-bar-small">
+                                <div class="progress-fill-small" style="width: {{ (prog.progress / prog.challenge.goal_value * 100) if prog.challenge.goal_value > 0 else 0 }}%"></div>
+                            </div>
+                            {% if prog.completed %}✅ {{ get_text('completed', lang) }}{% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+                <button class="article-btn der" onclick="shareProfile()">{{ get_text('share', lang) }}</button>
+            </div>
+
+        {% elif page == 'leaderboard' %}
+            <div class="glass-card">
+                <h1>🏆 {{ get_text('leaderboard_title', lang) }}</h1>
+                <div class="duration-buttons">
+                    <a href="/leaderboard?cat=30sn&period={{ period }}"><button class="duration-btn {% if category=='30sn' %}selected{% endif %}">30sn</button></a>
+                    <a href="/leaderboard?cat=1dk&period={{ period }}"><button class="duration-btn {% if category=='1dk' %}selected{% endif %}">1dk</button></a>
+                    <a href="/leaderboard?cat=3dk&period={{ period }}"><button class="duration-btn {% if category=='3dk' %}selected{% endif %}">3dk</button></a>
+                    <a href="/leaderboard?cat=5dk&period={{ period }}"><button class="duration-btn {% if category=='5dk' %}selected{% endif %}">5dk</button></a>
+                </div>
+                <div class="duration-buttons">
+                    <a href="/leaderboard?cat={{ category }}&period=all"><button class="duration-btn {% if period=='all' %}selected{% endif %}">{{ get_text('all_time', lang) }}</button></a>
+                    <a href="/leaderboard?cat={{ category }}&period=week"><button class="duration-btn {% if period=='week' %}selected{% endif %}">{{ get_text('weekly', lang) }}</button></a>
+                    <a href="/leaderboard?cat={{ category }}&period=month"><button class="duration-btn {% if period=='month' %}selected{% endif %}">{{ get_text('monthly', lang) }}</button></a>
+                </div>
+                <table class="leaderboard-table">
+                    <tr><th>{{ get_text('rank', lang) }}</th><th>{{ get_text('user', lang) }}</th><th>{{ get_text('score_header', lang) }}</th></tr>
+                    {% for rank, username, score in scores %}
+                    <tr><td>#{{ rank }}</td><td>{{ username }}</td><td>{{ score }}</td></tr>
+                    {% else %}
+                    <tr><td colspan="3">{{ get_text('no_scores', lang) }}</td></tr>
+                    {% endfor %}
+                </table>
+                {% if current_user.is_authenticated %}
+                    <button class="article-btn der" onclick="shareLeaderboard()">{{ get_text('share', lang) }}</button>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+
+    <button class="sound-toggle" id="soundToggle" onclick="toggleSound()">🔊</button>
+
+    {% if page == 'game' %}
+    <script>
+        let soundEnabled = localStorage.getItem('soundEnabled') !== 'false';
+        const correctSound = new Audio('/static/sounds/correct.mp3');
+        const wrongSound = new Audio('/static/sounds/wrong.mp3');
+        function playSound(type) {
+            if (!soundEnabled) return;
+            if (type === 'correct') correctSound.play().catch(e => {});
+            else if (type === 'wrong') wrongSound.play().catch(e => {});
+        }
+
+        let timeLeft = 60, totalTime = 60, score = 0, correctCount = 0, wrongCount = 0;
+        let currentWordId = null, correctArticle = '', currentMeaning = '', currentPlural = '';
+        let timerInterval, gameActive = false, paused = false, category = '1dk';
+        let articleCorrect = {der:0, die:0, das:0}, articleWrong = {der:0, die:0, das:0};
+
+        const timerEl = document.getElementById('timer');
+        const progressEl = document.getElementById('progress');
+        const wordEl = document.getElementById('word');
+        const scoreEl = document.getElementById('score');
+        const articleButtons = document.getElementById('articleButtons');
+        const messageArea = document.getElementById('messageArea');
+        const messageText = document.getElementById('messageText');
+        const continueBtn = document.getElementById('continueBtn');
+        const gameArea = document.getElementById('gameArea');
+        const durationSelection = document.getElementById('durationSelection');
+        const durationBtns = document.querySelectorAll('.duration-btn');
+
+        durationBtns.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                durationBtns.forEach(b => b.classList.remove('selected'));
+                this.classList.add('selected');
+                const duration = parseInt(this.dataset.duration);
+                timeLeft = duration; totalTime = duration;
+                timerEl.textContent = timeLeft;
+                progressEl.style.width = '100%';
+                if (duration === 30) category = '30sn';
+                else if (duration === 60) category = '1dk';
+                else if (duration === 180) category = '3dk';
+                else if (duration === 300) category = '5dk';
+                durationSelection.style.display = 'none';
+                gameArea.style.display = 'block';
+                startGame();
+            }, { once: true });
+        });
+
+        function startGame() {
+            gameActive = true; paused = false;
+            score = 0; correctCount = 0; wrongCount = 0;
+            articleCorrect = {der:0, die:0, das:0};
+            articleWrong = {der:0, die:0, das:0};
+            scoreEl.textContent = '{{ get_text("score", lang) }}: ' + score;
+            messageArea.style.display = 'none';
+            articleButtons.style.display = 'flex';
+            fetchNewWord();
+            timerInterval = setInterval(() => {
+                if (gameActive && !paused && timeLeft > 0) { timeLeft--; updateTimer(); }
+                if (timeLeft <= 0 && gameActive) endGame();
+            }, 1000);
+        }
+
+        function updateTimer() {
+            timerEl.textContent = timeLeft;
+            progressEl.style.width = (timeLeft / totalTime) * 100 + '%';
+        }
+
+        function fetchNewWord() {
+            if (!gameActive) return;
+            fetch('/api/random_word')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) { wordEl.textContent = 'Hata!'; return; }
+                    currentWordId = data.id;
+                    wordEl.textContent = data.german;
+                    correctArticle = data.article;
+                    currentMeaning = data.meaning || '';
+                    currentPlural = data.plural || '';
+                })
+                .catch(() => wordEl.textContent = 'Bağlantı hatası');
+        }
+
+        window.checkArticle = function(selected) {
+            if (!gameActive || paused || timeLeft <= 0 || !currentWordId) return;
+            if (selected === correctArticle) {
+                score += 10; correctCount++;
+                articleCorrect[correctArticle] = (articleCorrect[correctArticle] || 0) + 1;
+                scoreEl.textContent = '{{ get_text("score", lang) }}: ' + score;
+                playSound('correct');
+                fetchNewWord();
+            } else {
+                wrongCount++;
+                articleWrong[selected] = (articleWrong[selected] || 0) + 1;
+                playSound('wrong');
+                paused = true;
+                articleButtons.style.display = 'none';
+                messageArea.style.display = 'block';
+                let extra = '';
+                if (currentMeaning) extra += `<br>Anlamı: ${currentMeaning}`;
+                if (currentPlural) extra += `<br>Çoğulu: ${currentPlural}`;
+                messageText.innerHTML = `❌ {{ get_text("wrong", lang) }}<br>{{ get_text("correct_answer", lang) }}: <strong>${correctArticle}</strong>${extra}`;
+            }
+        };
+
+        continueBtn.addEventListener('click', function() {
+            paused = false;
+            messageArea.style.display = 'none';
+            articleButtons.style.display = 'flex';
+            fetchNewWord();
+        });
+
+        function endGame() {
+            gameActive = false;
+            clearInterval(timerInterval);
+            articleButtons.style.display = 'none';
+            messageArea.style.display = 'none';
+
+            fetch('/api/submit_score', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    score: score,
+                    category: category,
+                    correct_count: correctCount,
+                    wrong_count: wrongCount,
+                    article_correct: articleCorrect,
+                    article_wrong: articleWrong
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    let msg = `{{ get_text("game_over", lang) }} {{ get_text("score", lang) }}: ${score}. `;
+                    msg += data.is_highscore ? '{{ get_text("new_record", lang) }}' : '{{ get_text("try_again", lang) }}';
+                    alert(msg);
+                    window.location.href = '/leaderboard?cat=' + category;
+                } else alert('Skor kaydedilemedi.');
+            })
+            .catch(() => alert('Skor gönderilemedi.'));
+        }
+    </script>
+    {% endif %}
+
+    {% if page == 'profile' %}
+    <script>
+        function shareProfile() {
+            let text = `Artikelle.io profilime bak! Toplam doğru: {{ stats.total_correct }}, En iyi skor: {{ stats.best_scores['1dk'] }} (1dk). Hemen katıl: https://artikelle.io`;
+            if (navigator.share) {
+                navigator.share({ title: 'Artikelle.io Profilim', text: text, url: 'https://artikelle.io' });
+            } else {
+                prompt('Paylaşmak için metni kopyala:', text);
+            }
+        }
+    </script>
+    {% endif %}
+
+    {% if page == 'leaderboard' %}
+    <script>
+        function shareLeaderboard() {
+            let text = `Artikelle.io lider tablosu! Sen de katıl: https://artikelle.io`;
+            if (navigator.share) {
+                navigator.share({ title: 'Artikelle.io Lider Tablosu', text: text, url: window.location.href });
+            } else {
+                prompt('Paylaşmak için metni kopyala:', text);
+            }
+        }
+    </script>
+    {% endif %}
+
+    <script>
+        let soundEnabled = localStorage.getItem('soundEnabled') !== 'false';
+        const soundBtn = document.getElementById('soundToggle');
+        if (soundBtn) soundBtn.textContent = soundEnabled ? '🔊' : '🔇';
+
+        window.toggleSound = function() {
+            soundEnabled = !soundEnabled;
+            localStorage.setItem('soundEnabled', soundEnabled);
+            if (soundBtn) soundBtn.textContent = soundEnabled ? '🔊' : '🔇';
+        };
+
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(err => console.log(err));
+        }
+    </script>
+</body>
+</html>
