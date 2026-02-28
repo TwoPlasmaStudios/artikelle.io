@@ -8,21 +8,26 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired, Email, Length, EqualTo, ValidationError
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_admin import Admin, AdminIndexView
-from flask_admin.contrib.sqla import ModelView
 from flask_babel import Babel
+
+# ========== Admin paneli için importlar ==========
+try:
+    from flask_admin import Admin, AdminIndexView
+    from flask_admin.contrib.sqla import ModelView
+    ADMIN_AVAILABLE = True
+except ImportError:
+    ADMIN_AVAILABLE = False
+    print("Flask-Admin kurulu değil, admin paneli devre dışı.")
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'gizli-anahtar-buraya'  # production'da env kullan!
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///artikelle.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Babel'i başlat (sadece admin paneli için, dil seçici kullanmıyoruz)
-babel = Babel(app)
-
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
+babel = Babel(app)  # Sadece başlat
 
 # -------------------------------------------------------------------
 # VERİTABANI MODELLERİ
@@ -116,7 +121,6 @@ class UserDailyProgress(db.Model):
     completed_at = db.Column(db.DateTime, nullable=True)
     __table_args__ = (db.UniqueConstraint('user_id', 'challenge_id', 'date'),)
 
-    # İlişki (hatayı gidermek için eklendi)
     challenge = db.relationship('DailyChallenge')
 
 @login_manager.user_loader
@@ -656,32 +660,43 @@ def service_worker():
     return app.send_static_file('sw.js')
 
 # -------------------------------------------------------------------
-# ADMIN PANELİ (Güvenli)
+# ADMIN PANELİ (Try-Except ile, hata verse de uygulama çalışır)
 # -------------------------------------------------------------------
 
-class AdminModelView(ModelView):
-    def is_accessible(self):
-        return current_user.is_authenticated and current_user.is_admin
+if ADMIN_AVAILABLE:
+    try:
+        class AdminModelView(ModelView):
+            def is_accessible(self):
+                return current_user.is_authenticated and current_user.is_admin
 
-    def inaccessible_callback(self, name, **kwargs):
-        return redirect(url_for('login', next=request.url))
+            def inaccessible_callback(self, name, **kwargs):
+                return redirect(url_for('login', next=request.url))
 
-class MyAdminIndexView(AdminIndexView):
-    def is_accessible(self):
-        return current_user.is_authenticated and current_user.is_admin
+        class MyAdminIndexView(AdminIndexView):
+            def is_accessible(self):
+                return current_user.is_authenticated and current_user.is_admin
 
-    def inaccessible_callback(self, name, **kwargs):
-        return redirect(url_for('login', next=request.url))
+            def inaccessible_callback(self, name, **kwargs):
+                return redirect(url_for('login', next=request.url))
 
-admin = Admin(app, name='Artikelle Admin', template_mode='bootstrap3', index_view=MyAdminIndexView())
-admin.add_view(AdminModelView(User, db.session))
-admin.add_view(AdminModelView(Word, db.session))
-admin.add_view(AdminModelView(Score, db.session))
-admin.add_view(AdminModelView(Achievement, db.session))
-admin.add_view(AdminModelView(UserAchievement, db.session))
-admin.add_view(AdminModelView(DailyChallenge, db.session))
-admin.add_view(AdminModelView(UserDailyProgress, db.session))
-admin.add_view(AdminModelView(UserProfile, db.session))
+        # Admin panelini oluştur (template_mode parametresi yok - eski sürümlerle uyumlu)
+        admin = Admin(app, name='Artikelle Admin', index_view=MyAdminIndexView())
+        
+        # View'ları ekle
+        admin.add_view(AdminModelView(User, db.session))
+        admin.add_view(AdminModelView(Word, db.session))
+        admin.add_view(AdminModelView(Score, db.session))
+        admin.add_view(AdminModelView(UserProfile, db.session))
+        admin.add_view(AdminModelView(Achievement, db.session))
+        admin.add_view(AdminModelView(UserAchievement, db.session))
+        admin.add_view(AdminModelView(DailyChallenge, db.session))
+        admin.add_view(AdminModelView(UserDailyProgress, db.session))
+        
+        print("Admin paneli başarıyla yüklendi.")
+    except Exception as e:
+        print(f"Admin paneli yüklenirken hata oluştu (ancak uygulama çalışmaya devam ediyor): {e}")
+else:
+    print("Flask-Admin kurulu olmadığı için admin paneli eklenmedi.")
 
 if __name__ == '__main__':
     app.run(debug=True)
